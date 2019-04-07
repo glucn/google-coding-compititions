@@ -32,16 +32,19 @@ Solving the first two test sets for this problem should get you a long way towar
 
 ## Sample
 
-Input 
+Input
+```
 3
 4
 940
 4444
+```
 
-Output 
+Output
+```
 Case #1: 2 2
 Case #2: 852 88
 Case #3: 667 3777
-
+```
   
 In Sample Case #1, notice that A and B can be the same. The only other possible answers are 1 3 and 3 1.
