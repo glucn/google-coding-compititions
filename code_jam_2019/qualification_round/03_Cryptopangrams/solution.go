@@ -1,5 +1,7 @@
 package main
 
+// TODO: Test Set 2 runtime error (number size)
+
 import (
 	"bufio"
 	"fmt"
