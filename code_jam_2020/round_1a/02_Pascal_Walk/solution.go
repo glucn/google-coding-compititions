@@ -5,23 +5,19 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sort"
 )
 
-var maxSize = 1 << 10
+const maxSize = 500 // the length of the walk cannot be longer than 500, so we can use up to 500 rows
 var dp = make(map[int][]node)
 var val = make([][]int, maxSize)
 
-// This was the code I submitted during round 1a,
-// it got WA (wrong answer) in the invisible test set 3
-// TODO: clean up the code
-// TODO: solve it for test set 3
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var T int
-
 	if scanner.Scan() {
-		T = getInt(scanner.Text())
+		T, _ = strconv.Atoi(scanner.Text())
 	}
 
 	for i := 0; i<maxSize; i++ {
@@ -38,16 +34,14 @@ func main() {
 
 	dp[1] = []node{{row: 1, col: 1}}
 
-	// fmt.Println(val)
-
 	for t := 0; t < T; t++ {
 		var N int
 		if scanner.Scan() {
-			N = getInt(scanner.Text())
+			N, _ = strconv.Atoi(scanner.Text())
 		}
 
 		if solution, found := dp[N]; found {
-			// solved
+			// solved before
 			fmt.Printf("Case #%d:\n", t+1)
 			output(solution)
 			continue
@@ -66,33 +60,32 @@ func main() {
 	}
 }
 
-func getInt(s string) int {
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		panic(err.Error())
-	}
-	return n
-}
-
 type node struct {
 	row, col int
+	val int
 }
+
+type nodes []node
+func (n nodes) Len() int { return len(n) }
+func (n nodes) Less(i, j int) bool { return n[i].val > n[j].val }
+func (n nodes) Swap(i, j int) { n[i], n[j] = n[j], n[i] }
 
 var moves [][]int = [][]int{
 	[]int{-1, -1}, []int{-1, 0}, []int{0, -1}, []int{0, 1}, []int{1, 0}, []int{1, 1},
 }
 
 func dfs(path []node, visited [][]bool, N int, sum int, t int) bool {
-	// fmt.Println(path)
 	current := path[len(path) - 1]
+
+	var nextSteps []node
 
 	for _, m := range moves {
 		nn := node{row: current.row + m[0], col: current.col + m[1]}
-
-		if nn.row > 0 && nn.col > 0 && nn.col <= nn.row && !visited[nn.row-1][nn.col-1] {
+		if nn.row > 0 && nn.col > 0 && nn.row <= maxSize && nn.col <= nn.row && !visited[nn.row-1][nn.col-1] {
 			ss := sum + val[nn.row-1][nn.col-1]
 
 			if _, found := dp[ss]; !found {
+				// use dp to optimize performance in the case of multiple runs
 				dp[ss] = append(append(path[:0:0], path...), nn)
 			}
 			
@@ -102,14 +95,23 @@ func dfs(path []node, visited [][]bool, N int, sum int, t int) bool {
 				output(append(path, nn))
 				return true
 			}
+
 			if ss < N {
-				visited[nn.row-1][nn.col-1] = true
-				if dfs(append(path, nn), visited, N, sum + val[nn.row-1][nn.col-1], t) {
-					return true
-				}
-				visited[nn.row-1][nn.col-1] = false
+				nn.val = ss
+				nextSteps = append(nextSteps, nn)
 			}
 		}
+	}
+
+	// prioritize nodes that has higher value to shorten the walk
+	sort.Sort(nodes(nextSteps))
+
+	for _, n := range nextSteps {
+		visited[n.row-1][n.col-1] = true
+		if dfs(append(path, n), visited, N, sum + val[n.row-1][n.col-1], t) {
+			return true
+		}
+		visited[n.row-1][n.col-1] = false
 	}
 
 	return false
@@ -117,11 +119,11 @@ func dfs(path []node, visited [][]bool, N int, sum int, t int) bool {
 
 func output(path []node) {
 	// sum := 0
-	// fmt.Println("length", len(path))
 	for _, n := range path {
 		fmt.Println(n.row, n.col)
 		// sum += val[n.row-1][n.col-1]
 	}
+	// fmt.Println("length", len(path))
 	// fmt.Println("sum", sum)
 }
 
