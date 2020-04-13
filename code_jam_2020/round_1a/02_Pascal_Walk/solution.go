@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 	"sort"
+	"strconv"
 )
 
 const maxSize = 500 // the length of the walk cannot be longer than 500, so we can use up to 500 rows
@@ -20,16 +20,16 @@ func main() {
 		T, _ = strconv.Atoi(scanner.Text())
 	}
 
-	for i := 0; i<maxSize; i++ {
+	for i := 0; i < maxSize; i++ {
 		val[i] = make([]int, i+1)
 		val[i][0] = 1
 		val[i][i] = 1
 		if i > 1 {
-			for j := 1; j<i; j++ {
+			for j := 1; j < i; j++ {
 				val[i][j] = val[i-1][j-1] + val[i-1][j]
 			}
 		}
-		
+
 	}
 
 	dp[1] = []node{{row: 1, col: 1}}
@@ -48,7 +48,7 @@ func main() {
 		}
 
 		visited := make([][]bool, maxSize)
-		for i := 0; i< maxSize; i++ {
+		for i := 0; i < maxSize; i++ {
 			visited[i] = make([]bool, i+1)
 		}
 
@@ -62,20 +62,21 @@ func main() {
 
 type node struct {
 	row, col int
-	val int
+	val      int
 }
 
 type nodes []node
-func (n nodes) Len() int { return len(n) }
+
+func (n nodes) Len() int           { return len(n) }
 func (n nodes) Less(i, j int) bool { return n[i].val > n[j].val }
-func (n nodes) Swap(i, j int) { n[i], n[j] = n[j], n[i] }
+func (n nodes) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
 
 var moves [][]int = [][]int{
 	[]int{-1, -1}, []int{-1, 0}, []int{0, -1}, []int{0, 1}, []int{1, 0}, []int{1, 1},
 }
 
 func dfs(path []node, visited [][]bool, N int, sum int, t int) bool {
-	current := path[len(path) - 1]
+	current := path[len(path)-1]
 
 	var nextSteps []node
 
@@ -88,7 +89,7 @@ func dfs(path []node, visited [][]bool, N int, sum int, t int) bool {
 				// use dp to optimize performance in the case of multiple runs
 				dp[ss] = append(append(path[:0:0], path...), nn)
 			}
-			
+
 			if ss == N {
 				// solved
 				fmt.Printf("Case #%d:\n", t+1)
@@ -108,7 +109,7 @@ func dfs(path []node, visited [][]bool, N int, sum int, t int) bool {
 
 	for _, n := range nextSteps {
 		visited[n.row-1][n.col-1] = true
-		if dfs(append(path, n), visited, N, sum + val[n.row-1][n.col-1], t) {
+		if dfs(append(path, n), visited, N, sum+val[n.row-1][n.col-1], t) {
 			return true
 		}
 		visited[n.row-1][n.col-1] = false
@@ -126,4 +127,3 @@ func output(path []node) {
 	// fmt.Println("length", len(path))
 	// fmt.Println("sum", sum)
 }
-
