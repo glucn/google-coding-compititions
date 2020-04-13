@@ -4,10 +4,6 @@ import (
 	"fmt"
 )
 
-// This was the code I submitted during round 1a,
-// it got MLE(memory limit exceeded) in the invisible test set 2
-// TODO: clean up the code
-// TODO: solve the pproblem for test set 2
 func main() {
 
 	var T int
@@ -24,6 +20,8 @@ func main() {
 		left := make([][]int, R)
 		right := make([][]int, R)
 
+		total := 0 // the interest level of all dancers still in compitition
+
 		for r := 0; r < R; r++ {
 			cell[r] = make([]int, C)
 			up[r] = make([]int, C)
@@ -38,11 +36,13 @@ func main() {
 				right[r][c] = c + 1
 
 				fmt.Scan(&cell[r][c])
+				total += cell[r][c]
 			}
 		}
 
-		sum := 0
-		eliminate := make([][]int, R)
+		sum := total // total interest level of the compitition
+
+		eliminate := make([][]int, R) // record which round the dancer is eliminated
 		for i := range eliminate {
 			eliminate[i] = make([]int, C)
 		}
@@ -54,29 +54,12 @@ func main() {
 			}
 		}
 
-		round := 1
-		for {
-			// fmt.Println("round start")
-			// fmt.Println("left", left)
-			// fmt.Println("right", right)
-
-			for r := 0; r < R; r++ {
-				for c := 0; c < C; c++ {
-					if eliminate[r][c] == 0 {
-						// interest level of the competition
-						sum += cell[r][c]
-					}
-				}
-			}
-
+		for round := 1; ; round++ {
 			nextCheck := make(map[node]struct{})
 
 			for n := range check {
 				r := n.x
 				c := n.y
-				if eliminate[r][c] != 0 {
-					continue
-				}
 				sumNei := 0
 				countNei := 0
 				if left[r][c] != -1 {
@@ -100,7 +83,9 @@ func main() {
 				}
 				if cell[r][c]*countNei < sumNei {
 					eliminate[r][c] = round
+					total -= cell[r][c]
 
+					// if a dancer is eliminated this round, check the compass neighbors in the next round
 					if left[r][c] != -1 {
 						nextCheck[node{x: r, y: left[r][c]}] = struct{}{}
 					}
@@ -119,9 +104,7 @@ func main() {
 				}
 			}
 
-			// fmt.Println("eliminate", eliminate)
-			// fmt.Println("nextCheck", nextCheck)
-
+			// update adjacency
 			for n := range check {
 				r := n.x
 				c := n.y
@@ -154,7 +137,7 @@ func main() {
 				break
 			}
 
-			round++
+			sum += total
 		}
 
 		fmt.Printf("Case #%d: %d\n", t+1, sum)
@@ -163,8 +146,4 @@ func main() {
 
 type node struct {
 	x, y int
-}
-
-type neighbor struct {
-	left, right, up, down int
 }
