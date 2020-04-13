@@ -1,11 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
 )
 
 // This was the code I submitted during round 1a,
@@ -13,138 +9,162 @@ import (
 // TODO: clean up the code
 // TODO: solve the pproblem for test set 2
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
 
 	var T int
-	if scanner.Scan() {
-		T = getInt(scanner.Text())
-	}
+	fmt.Scan(&T)
 
 	for t := 0; t < T; t++ {
 		var R, C int
-		if scanner.Scan() {
-			input := strings.Split(scanner.Text(), " ")
-			R = getInt(input[0])
-			C = getInt(input[1])
-		}
+		fmt.Scan(&R)
+		fmt.Scan(&C)
 
 		cell := make([][]int, R)
-		neighbors := make([][]neighbor, R)
+		up := make([][]int, R)
+		down := make([][]int, R)
+		left := make([][]int, R)
+		right := make([][]int, R)
 
-		// total := 0
-		for r := 0; r< R; r++ {
+		for r := 0; r < R; r++ {
 			cell[r] = make([]int, C)
-			neighbors[r] = make([]neighbor, C)
+			up[r] = make([]int, C)
+			down[r] = make([]int, C)
+			left[r] = make([]int, C)
+			right[r] = make([]int, C)
 
-			if scanner.Scan() {
-				input := strings.Split(scanner.Text(), " ")
-				for c := 0; c < C; c++ {
-					neighbors[r][c] = neighbor{
-						up: r-1,
-						down: r+1,
-						left: c-1,
-						right: c+1,
-					}
-					cell[r][c] = getInt(input[c])
-					// total += cell[r][c]
-				}
+			for c := 0; c < C; c++ {
+				up[r][c] = r - 1
+				down[r][c] = r + 1
+				left[r][c] = c - 1
+				right[r][c] = c + 1
+
+				fmt.Scan(&cell[r][c])
 			}
 		}
-		// fmt.Println("total", total)
 
 		sum := 0
-		eliminate := make([][]bool, R)
+		eliminate := make([][]int, R)
 		for i := range eliminate {
-			eliminate[i] = make([]bool, C)
-		}
-		terminate := false
-		for !terminate {
-			// copy neibourgh
-			for r := 0; r < R; r++ {
-				for c := 0; c < C; c++ {
-					if eliminate[r][c] {
-						if c != C-1 {
-							neighbors[r][c+1].left = neighbors[r][c].left
-						}
-						if r != R-1 {
-							neighbors[r+1][c].up = neighbors[r][c].up 
-						}
-					}
-				}
-			}
-			for r := R-1; r >= 0; r-- {
-				for c := C-1; c >= 0; c-- {
-					if eliminate[r][c] {
-						if c != 0 {
-							neighbors[r][c-1].right = neighbors[r][c].right
-						}
-						if r != 0 {
-							neighbors[r-1][c].down = neighbors[r][c].down 
-						}
-					}
-				}
-			}
-
-			terminate = true
-			// calculate new round
-			for r := 0; r < R; r++ {
-				for c := 0; c < C; c++ {
-					if eliminate[r][c] {
-						continue
-					}
-
-					// interest level of the competition
-					sum += cell[r][c]
-
-					sumNei := 0
-					countNei := 0
-					if neighbors[r][c].left != -1 {
-						sumNei += cell[r][neighbors[r][c].left]
-						countNei++
-					}
-					if neighbors[r][c].right != C {
-						sumNei += cell[r][neighbors[r][c].right]
-						countNei++
-					}
-					if neighbors[r][c].up != -1 {
-						sumNei += cell[neighbors[r][c].up][c]
-						countNei++
-					}
-					if neighbors[r][c].down != R {
-						sumNei += cell[neighbors[r][c].down][c]
-						countNei++
-					}
-					if countNei == 0 {
-						continue
-					}
-					// fmt.Println(r, c, cell[r][c], sumNei, countNei, float64(sumNei)/float64(countNei))
-					if float64(sumNei)/float64(countNei) > float64(cell[r][c]) {
-						eliminate[r][c] = true
-						terminate = false
-						// fmt.Println(r, c, "eliminated")
-					}
-				}
-			}
-
-			// fmt.Println(eliminate)
-
+			eliminate[i] = make([]int, C)
 		}
 
-		
+		check := make(map[node]struct{})
+		for r := 0; r < R; r++ {
+			for c := 0; c < C; c++ {
+				check[node{x: r, y: c}] = struct{}{}
+			}
+		}
+
+		round := 1
+		for {
+			// fmt.Println("round start")
+			// fmt.Println("left", left)
+			// fmt.Println("right", right)
+
+			for r := 0; r < R; r++ {
+				for c := 0; c < C; c++ {
+					if eliminate[r][c] == 0 {
+						// interest level of the competition
+						sum += cell[r][c]
+					}
+				}
+			}
+
+			nextCheck := make(map[node]struct{})
+
+			for n := range check {
+				r := n.x
+				c := n.y
+				if eliminate[r][c] != 0 {
+					continue
+				}
+				sumNei := 0
+				countNei := 0
+				if left[r][c] != -1 {
+					sumNei += cell[r][left[r][c]]
+					countNei++
+				}
+				if right[r][c] != C {
+					sumNei += cell[r][right[r][c]]
+					countNei++
+				}
+				if up[r][c] != -1 {
+					sumNei += cell[up[r][c]][c]
+					countNei++
+				}
+				if down[r][c] != R {
+					sumNei += cell[down[r][c]][c]
+					countNei++
+				}
+				if countNei == 0 {
+					continue
+				}
+				if cell[r][c]*countNei < sumNei {
+					eliminate[r][c] = round
+
+					if left[r][c] != -1 {
+						nextCheck[node{x: r, y: left[r][c]}] = struct{}{}
+					}
+
+					if right[r][c] != C {
+						nextCheck[node{x: r, y: right[r][c]}] = struct{}{}
+					}
+
+					if up[r][c] != -1 {
+						nextCheck[node{x: up[r][c], y: c}] = struct{}{}
+					}
+
+					if down[r][c] != R {
+						nextCheck[node{x: down[r][c], y: c}] = struct{}{}
+					}
+				}
+			}
+
+			// fmt.Println("eliminate", eliminate)
+			// fmt.Println("nextCheck", nextCheck)
+
+			for n := range check {
+				r := n.x
+				c := n.y
+				if eliminate[r][c] == round {
+					if left[r][c] != -1 {
+						right[r][left[r][c]] = right[r][c]
+					}
+
+					if right[r][c] != C {
+						left[r][right[r][c]] = left[r][c]
+					}
+
+					if up[r][c] != -1 {
+						down[up[r][c]][c] = down[r][c]
+					}
+
+					if down[r][c] != R {
+						up[down[r][c]][c] = up[r][c]
+					}
+				}
+			}
+
+			check = make(map[node]struct{})
+			for k, v := range nextCheck {
+				if eliminate[k.x][k.y] == 0 {
+					check[k] = v
+				}
+			}
+			if len(check) == 0 {
+				break
+			}
+
+			round++
+		}
 
 		fmt.Printf("Case #%d: %d\n", t+1, sum)
 	}
 }
 
-func getInt(s string) int {
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		panic(err.Error())
-	}
-	return n
+type node struct {
+	x, y int
 }
 
 type neighbor struct {
 	left, right, up, down int
 }
-
