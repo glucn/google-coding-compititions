@@ -34,21 +34,21 @@ Time limit: 30 seconds per test set.\
 Memory limit: 1GB.\
 1 ≤ **T** ≤ 20.\
 **A** ≤ R ≤ **B**.\
--10^9^ + R ≤ X ≤ 10^9^ - R.\
--10^9^ + R ≤ Y ≤ 10^9^ - R.
+-10<sup>9</sup> + R ≤ X ≤ 10<sup>9</sup> - R.\
+-10<sup>9</sup> + R ≤ Y ≤ 10<sup>9</sup> - R.
 
 ### Test set 1 (Visible Verdict)
 
-**A** = **B** = 10^9^ - 5.
+**A** = **B** = 10<sup>9</sup> - 5.
 
 ### Test set 2 (Visible Verdict)
 
-**A** = **B** = 10^9^ - 50.
+**A** = **B** = 10<sup>9</sup> - 50.
 
 ### Test set 3 (Hidden Verdict)
 
-**A** = 10^9^ / 2.\
-**B** = 10^9^.
+**A** = 10<sup>9</sup> / 2.\
+**B** = 10<sup>9</sup>.
 
 ## Testing Tool
 
